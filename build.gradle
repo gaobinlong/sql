@@ -6,7 +6,8 @@
 
 buildscript {
     ext {
-        opensearch_version = System.getProperty("opensearch.version", "2.11.1-SNAPSHOT")
+        opensearch_group = "org.opensearch"
+        opensearch_version = System.getProperty("opensearch.version", "2.11.0-SNAPSHOT")
         isSnapshot = "true" == System.getProperty("build.snapshot", "true")
         buildVersionQualifier = System.getProperty("build.version_qualifier", "")
         version_tokens = opensearch_version.tokenize('-')
@@ -59,13 +60,14 @@ buildscript {
 
     dependencies {
         classpath "org.opensearch.gradle:build-tools:${opensearch_version}"
+        classpath 'com.github.johnrengelman:shadow:7.0.0'
     }
 }
 
 plugins {
-    id 'nebula.ospackage' version "8.3.0"
+    id "com.netflix.nebula.ospackage" version "11.3.0"
     id 'java-library'
-    id "io.freefair.lombok" version "6.4.0"
+    id "io.freefair.lombok" version "8.1.0"
     id 'jacoco'
     id 'com.diffplug.spotless' version '6.19.0'
 }
@@ -157,8 +159,8 @@ jacoco {
 }
 jacocoTestReport {
     reports {
-        xml.enabled false
-        csv.enabled false
+        xml.required.set(false)
+        csv.required.set(false)
     }
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {

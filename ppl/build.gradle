@@ -27,6 +27,8 @@ plugins {
     id "io.freefair.lombok"
     id 'jacoco'
     id 'antlr'
+    id 'com.github.johnrengelman.shadow'
+    id 'maven-publish'
 }
 
 generateGrammarSource {
@@ -53,6 +55,8 @@ dependencies {
     api project(':common')
     api project(':core')
     api project(':protocol')
+    compileOnly group: 'org.opensearch', name: 'opensearch', version: "${opensearch_version}"
+    compileOnly "org.opensearch:common-utils:${common_utils_version}"
 
     testImplementation group: 'junit', name: 'junit', version: '4.13.2'
     testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: '2.1'
@@ -69,8 +73,8 @@ test {
 
 jacocoTestReport {
     reports {
-        html.enabled true
-        xml.enabled true
+        html.required.set(false)
+        xml.required.set(false)
     }
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
@@ -97,3 +101,65 @@ jacocoTestCoverageVerification {
     }
 }
 check.dependsOn jacocoTestCoverageVerification
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+            from components.java
+
+            pom {
+                name = "OpenSearch sql ppl"
+                packaging = "jar"
+                url = "https://github.com/opensearch-project/sql"
+                description = "OpenSearch sql ppl"
+                scm {
+                    connection = "scm:git@github.com:opensearch-project/sql.git"
+                    developerConnection = "scm:git@github.com:opensearch-project/sql.git"
+                    url = "git@github.com:opensearch-project/sql.git"
+                }
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+                developers {
+                    developer {
+                        name = "OpenSearch"
+                        url = "https://github.com/opensearch-project/sql"
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'staging'
+            url = "${rootProject.buildDir}/local-staging-repo"
+        }
+        maven {
+            name = "Snapshots" //  optional target repository name
+            url = "https://aws.oss.sonatype.org/content/repositories/snapshots"
+            credentials {
+                username "$System.env.SONATYPE_USERNAME"
+                password "$System.env.SONATYPE_PASSWORD"
+            }
+        }
+    }
+}
+
+shadowJar {
+    destinationDirectory = file("${project.buildDir}/distributions")
+    archiveClassifier.set(null)
+    dependencies {
+        include(project(':protocol'))
+        include(dependency('org.json:json:20230227'))
+    }
+    exclude 'META-INF/maven/com.google.guava/**'
+    exclude 'com/google/thirdparty/**'
+    relocate 'com.google.common', 'org.opensearch.ml.repackage.com.google.common'
+    relocate 'org.json', 'org.x.json'
+}
+
+publishShadowPublicationToMavenLocal.mustRunAfter shadowJar

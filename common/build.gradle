@@ -27,9 +27,6 @@ plugins {
     id "io.freefair.lombok"
 }
 
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     api "org.antlr:antlr4-runtime:4.7.1"
@@ -64,3 +61,5 @@ configurations.all {
     resolutionStrategy.force "joda-time:joda-time:2.10.12"
     resolutionStrategy.force "org.slf4j:slf4j-api:1.7.36"
 }
+
+

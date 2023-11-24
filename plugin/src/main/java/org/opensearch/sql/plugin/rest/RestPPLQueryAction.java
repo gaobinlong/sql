@@ -37,9 +37,9 @@ import org.opensearch.sql.legacy.metrics.MetricName;
 import org.opensearch.sql.legacy.metrics.Metrics;
 import org.opensearch.sql.opensearch.response.error.ErrorMessageFactory;
 import org.opensearch.sql.plugin.request.PPLQueryRequestFactory;
-import org.opensearch.sql.plugin.transport.PPLQueryAction;
-import org.opensearch.sql.plugin.transport.TransportPPLQueryRequest;
-import org.opensearch.sql.plugin.transport.TransportPPLQueryResponse;
+import org.opensearch.sql.ppl.transport.PPLQueryAction;
+import org.opensearch.sql.ppl.transport.TransportPPLQueryRequest;
+import org.opensearch.sql.ppl.transport.TransportPPLQueryResponse;
 
 public class RestPPLQueryAction extends BaseRestHandler {
   public static final String QUERY_API_ENDPOINT = "/_plugins/_ppl";

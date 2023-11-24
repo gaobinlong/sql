@@ -1,0 +1,70 @@
+plugins {
+    id 'java'
+    id "io.freefair.lombok"
+    id 'com.github.johnrengelman.shadow'
+    id 'signing'
+    id 'maven-publish'
+}
+
+dependencies {
+    implementation project(path: ":ppl", configuration: 'shadow')
+    compileOnly group: 'org.opensearch', name: 'opensearch', version: "${opensearch_version}"
+}
+
+shadowJar {
+    archiveClassifier.set(null)
+}
+
+task sourcesJar(type: Jar) {
+    archiveClassifier.set 'sources'
+    from sourceSets.main.allJava
+}
+
+publishing {
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+            artifact sourcesJar
+
+            pom {
+                name = "OpenSearch sql client"
+                packaging = "jar"
+                url = "https://github.com/opensearch-project/sql"
+                description = "OpenSearch sql client"
+                scm {
+                    connection = "scm:git@github.com:opensearch-project/sql.git"
+                    developerConnection = "scm:git@github.com:opensearch-project/sql.git"
+                    url = "git@github.com:opensearch-project/sql.git"
+                }
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+                developers {
+                    developer {
+                        name = "OpenSearch"
+                        url = "https://github.com/opensearch-project/sql"
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'staging'
+            url = "${rootProject.buildDir}/local-staging-repo"
+        }
+        maven {
+            name = "Snapshots" //  optional target repository name
+            url = "https://aws.oss.sonatype.org/content/repositories/snapshots"
+            credentials {
+                username "$System.env.SONATYPE_USERNAME"
+                password "$System.env.SONATYPE_PASSWORD"
+            }
+        }
+    }
+}
+
+compileJava.dependsOn(':ppl:shadowJar')
